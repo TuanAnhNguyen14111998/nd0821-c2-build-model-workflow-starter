@@ -13,11 +13,9 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope='session')
 def data(request):
-    run = wandb.init(job_type="data_tests", resume=True)
-
     # Download input artifact. This will also note that this script is using this
     # particular version of the artifact
-    data_path = run.use_artifact(request.config.option.csv).file()
+    data_path = request.config.option.csv
 
     if data_path is None:
         pytest.fail("You must provide the --csv option on the command line")
@@ -29,11 +27,9 @@ def data(request):
 
 @pytest.fixture(scope='session')
 def ref_data(request):
-    run = wandb.init(job_type="data_tests", resume=True)
-
     # Download input artifact. This will also note that this script is using this
     # particular version of the artifact
-    data_path = run.use_artifact(request.config.option.ref).file()
+    data_path = request.config.option.ref
 
     if data_path is None:
         pytest.fail("You must provide the --ref option on the command line")

@@ -5,6 +5,7 @@ This script download a URL to a local destination
 import argparse
 import logging
 import os
+import mlflow
 
 import wandb
 
@@ -15,19 +16,19 @@ logger = logging.getLogger()
 
 
 def go(args):
+    local_folder = "../../data/"
 
-    run = wandb.init(job_type="download_file")
-    run.config.update(args)
+    print(__file__)
+    print("="*10)
 
-    logger.info(f"Returning sample {args.sample}")
-    logger.info(f"Uploading {args.artifact_name} to Weights & Biases")
-    log_artifact(
-        args.artifact_name,
-        args.artifact_type,
-        args.artifact_description,
-        os.path.join("data", args.sample),
-        run,
-    )
+    with mlflow.start_run(run_name="download_data") as mlrun:
+        mlflow.log_param("artifact_name", args.artifact_name)
+        mlflow.log_param("local_folder", local_folder)
+        mlflow.log_param("mlflow run id", mlrun.info.run_id)
+        mlflow.set_tag('pipeline_step', __file__)
+        mlflow.log_artifacts(local_folder, artifact_path="data")
+
+    logger.info("finished downloading data to %s", local_folder)
 
 
 if __name__ == "__main__":

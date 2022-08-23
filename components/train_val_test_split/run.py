@@ -3,12 +3,12 @@
 This script splits the provided dataframe in test and remainder
 """
 import argparse
+import mlflow
 import logging
 import pandas as pd
-import wandb
 import tempfile
 from sklearn.model_selection import train_test_split
-from wandb_utils.log_artifact import log_artifact
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
@@ -16,38 +16,31 @@ logger = logging.getLogger()
 
 def go(args):
 
-    run = wandb.init(job_type="train_val_test_split")
-    run.config.update(args)
+    with mlflow.start_run(run_name="train_val_test_split") as mlrun:
+        logger.info(f"Fetching artifact {args.input}")
 
-    # Download input artifact. This will also note that this script is using this
-    # particular version of the artifact
-    logger.info(f"Fetching artifact {args.input}")
-    artifact_local_path = run.use_artifact(args.input).file()
+        # Download input artifact. This will also note that this script is using this
+        # particular version of the artifact
+        logger.info(f"Fetching artifact {args.input}")
+        artifact_local_path = args.input
 
-    df = pd.read_csv(artifact_local_path)
+        df = pd.read_csv(artifact_local_path)
 
-    logger.info("Splitting trainval and test")
-    trainval, test = train_test_split(
-        df,
-        test_size=args.test_size,
-        random_state=args.random_seed,
-        stratify=df[args.stratify_by] if args.stratify_by != 'none' else None,
-    )
+        logger.info("Splitting trainval and test")
+        trainval, test = train_test_split(
+            df,
+            test_size=args.test_size,
+            random_state=args.random_seed,
+            stratify=df[args.stratify_by] if args.stratify_by != 'none' else None,
+        )
 
-    # Save to output files
-    for df, k in zip([trainval, test], ['trainval', 'test']):
-        logger.info(f"Uploading {k}_data.csv dataset")
-        with tempfile.NamedTemporaryFile("w") as fp:
+        # Save to output files
+        for df, k in zip([trainval, test], ['trainval', 'test']):
+            logger.info(f"Uploading {k}_data.csv dataset")
+            df.to_csv(f"../../data/{k}_data.csv", index=False)
 
-            df.to_csv(fp.name, index=False)
+        mlflow.log_artifacts("../../data/", artifact_path="data")
 
-            log_artifact(
-                f"{k}_data.csv",
-                f"{k}_data",
-                f"{k} split of dataset",
-                fp.name,
-                run,
-            )
 
 
 if __name__ == "__main__":

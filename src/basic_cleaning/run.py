@@ -4,7 +4,7 @@ Download from W&B the raw dataset and apply some basic data cleaning, exporting 
 """
 import argparse
 import logging
-import wandb
+import mlflow
 import pandas as pd
 import os
 
@@ -15,15 +15,13 @@ logger = logging.getLogger()
 
 def go(args):
 
-    run = wandb.init(job_type="basic_cleaning")
-    run.config.update(args)
 
     # Download input artifact. This will also log that this script is using this
     # particular version of the artifact
     # artifact_local_path = run.use_artifact(args.input_artifact).file()
 
     logger.info("Downloading and read Artifact")
-    artifact_path = run.use_artifact(args.input_artifact).file()
+    artifact_path = args.input_artifact
     df = pd.read_csv(artifact_path)
 
     # Drop outliers
@@ -41,20 +39,20 @@ def go(args):
 
     # Save the cleaned dataset
     logger.info("Saving the output artifact")
-    file_name = "clean_sample.csv"
+    file_name = args.output_artifact
     df.to_csv(file_name, index=False)
 
-    artifact = wandb.Artifact(
-        args.output_artifact,
-        type=args.output_type,
-        description=args.output_description,
-    )
-    artifact.add_file(file_name)
+    print(file_name)
+    
+    with mlflow.start_run(run_name="basic_cleaning") as mlrun:
+        mlflow.log_param("local_folder", file_name)
+        mlflow.log_param("mlflow run id", mlrun.info.run_id)
+        mlflow.set_tag('pipeline_step', __file__)
+        mlflow.log_artifacts("../../data/", artifact_path="clean_sample")
+    
+    logger.info("finished cleaning data to %s", file_name)
 
-    logger.info("Logging artifact")
-    run.log_artifact(artifact)
-
-    os.remove(file_name)
+    # os.remove(file_name)
 
 
 if __name__ == "__main__":

@@ -1,24 +1,25 @@
 import pytest
 import pandas as pd
-import wandb
+import os
 
 
 def pytest_addoption(parser):
-    parser.addoption("--csv", action="store")
-    parser.addoption("--ref", action="store")
-    parser.addoption("--kl_threshold", action="store")
-    parser.addoption("--min_price", action="store")
-    parser.addoption("--max_price", action="store")
+    parser.addoption("--folder_path", action="store")
+    parser.addoption("--artifact_name", action="store")
+    parser.addoption("--storage_id", action="store")
+    parser.addoption("--train_pos_num", action="store")
+    parser.addoption("--train_neg_num", action="store")
+    parser.addoption("--test_pos_num", action="store")
+    parser.addoption("--test_neg_num", action="store")
 
 
 @pytest.fixture(scope='session')
-def data(request):
-    # Download input artifact. This will also note that this script is using this
-    # particular version of the artifact
-    data_path = request.config.option.csv
+def data_train(request):
+    storage_id = request.config.option.storage_id
+    data_path = f"../../data/information/{storage_id}/dataset/train.csv" 
 
-    if data_path is None:
-        pytest.fail("You must provide the --csv option on the command line")
+    if os.path.isfile(data_path) == False:
+        pytest.fail(f"You must download artifact from s3://mlflow/{storage_id}")
 
     df = pd.read_csv(data_path)
 
@@ -26,13 +27,19 @@ def data(request):
 
 
 @pytest.fixture(scope='session')
-def ref_data(request):
-    # Download input artifact. This will also note that this script is using this
-    # particular version of the artifact
-    data_path = request.config.option.ref
+def storage_id(request):
+    storage_id = request.config.option.storage_id
 
-    if data_path is None:
-        pytest.fail("You must provide the --ref option on the command line")
+    return storage_id
+
+
+@pytest.fixture(scope='session')
+def data_test(request):
+    storage_id = request.config.option.storage_id
+    data_path = f"../../data/information/{storage_id}/dataset/test.csv" 
+
+    if os.path.isfile(data_path) == False:
+        pytest.fail(f"You must download artifact from s3://mlflow/{storage_id}")
 
     df = pd.read_csv(data_path)
 
@@ -40,28 +47,40 @@ def ref_data(request):
 
 
 @pytest.fixture(scope='session')
-def kl_threshold(request):
-    kl_threshold = request.config.option.kl_threshold
+def train_pos_num(request):
+    train_pos_num = request.config.option.train_pos_num
 
-    if kl_threshold is None:
-        pytest.fail("You must provide a threshold for the KL test")
+    if train_pos_num is None:
+        pytest.fail("You must provide a train_pos_num")
 
-    return float(kl_threshold)
+    return int(train_pos_num)
 
-@pytest.fixture(scope='session')
-def min_price(request):
-    min_price = request.config.option.min_price
-
-    if min_price is None:
-        pytest.fail("You must provide min_price")
-
-    return float(min_price)
 
 @pytest.fixture(scope='session')
-def max_price(request):
-    max_price = request.config.option.max_price
+def train_neg_num(request):
+    train_neg_num = request.config.option.train_neg_num
 
-    if max_price is None:
-        pytest.fail("You must provide max_price")
+    if train_neg_num is None:
+        pytest.fail("You must provide a train_neg_num")
 
-    return float(max_price)
+    return int(train_neg_num)
+
+
+@pytest.fixture(scope='session')
+def test_pos_num(request):
+    test_pos_num = request.config.option.test_pos_num
+
+    if test_pos_num is None:
+        pytest.fail("You must provide a test_pos_num")
+
+    return int(test_pos_num)
+
+
+@pytest.fixture(scope='session')
+def test_neg_num(request):
+    test_neg_num = request.config.option.test_neg_num
+
+    if test_neg_num is None:
+        pytest.fail("You must provide a test_neg_num")
+
+    return int(test_neg_num)

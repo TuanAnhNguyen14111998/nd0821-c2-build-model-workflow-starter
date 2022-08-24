@@ -5,21 +5,28 @@ entry_points:
   main:
     parameters:
 
-      sample:
-        description: Name of sample to download
+      folder_path:
+        description: Folder store images
+        type: string
+
+      path_info:
+        description: List/File csv for training & testing model
         type: string
 
       artifact_name:
-        description: Name for the output artifact
+        description: List artifact name for tracking with S3
         type: string
-
+      
       artifact_type:
-        description: Type of the output artifact. This will be used to categorize the artifact in the W&B
-                     interface
+        description: Type of list artifact
+        type: string
+      
+      storage_id:
+        description: Type of list artifact
         type: string
 
       artifact_description:
         description: A brief description of the output artifact
         type: string
 
-    command: "python main.py {sample} {artifact_name} {artifact_type} {artifact_description}"
+    command: "python run.py {folder_path} {path_info} {artifact_name} {artifact_type} {storage_id} {artifact_description}"

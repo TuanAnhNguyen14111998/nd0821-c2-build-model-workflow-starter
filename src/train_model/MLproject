@@ -1,0 +1,45 @@
+name: download_file
+conda_env: conda.yml
+
+entry_points:
+  main:
+    parameters:
+
+      folder_path:
+        description: Folder store images
+        type: string
+
+      artifact_name:
+        description: List artifact name for tracking with S3
+        type: string
+      
+      storage_id:
+        description: Type of list artifact
+        type: string
+      
+      image_size:
+        description: Type of list artifact
+        type: 256
+
+      random_seed:
+        description: Seed for the random number generator. Use this for reproducibility
+        type: string
+        default: 42
+
+      model_config:
+        description: Model configuration. A path to a JSON file with the configuration that will
+                     be passed to the scikit-learn constructor for RandomForestRegressor.
+        type: string
+
+      output_artifact:
+        description: Name for the output artifact
+        type: string
+
+    command: >-
+      python run.py --folder_path {folder_path} \
+                    --artifact_name {artifact_name} \
+                    --storage_id {storage_id} \
+                    --image_size {image_size} \
+                    --random_seed {random_seed} \
+                    --model_config {model_config} \
+                    --output_artifact {output_artifact}

@@ -5,24 +5,32 @@ entry_points:
   main:
     parameters:
 
-      csv:
-        description: Input CSV file to be tested
+      folder_path:
+        description: Folder store images
         type: string
 
-      ref:
-        description: Reference CSV file to compare the new csv to
+      artifact_name:
+        description: List artifact name for tracking with S3
+        type: string
+      
+      storage_id:
+        description: Type of list artifact
         type: string
 
-      kl_threshold:
-        description: Threshold for the KL divergence test on the neighborhood group column
-        type: float
+      train_pos_num:
+        description: train_pos_num
+        type: int
+      
+      train_neg_num:
+        description: train_neg_num
+        type: int
+      
+      test_pos_num:
+        description: test_pos_num
+        type: int
+      
+      test_pos_num:
+        description: test_pos_num
+        type: int
 
-      min_price:
-        description: Minimum accepted price
-        type: float
-
-      max_price:
-        description: Maximum accepted price
-        type: float
-
-    command: "pytest . -vv --csv {csv} --ref {ref} --kl_threshold {kl_threshold} --min_price {min_price} --max_price {max_price}"
+    command: "pytest . -vv --folder_path {folder_path} --artifact_name {artifact_name} --storage_id {storage_id} --train_pos_num {train_pos_num} --train_neg_num {train_neg_num} --test_pos_num {test_pos_num} --test_pos_num {test_pos_num}"
